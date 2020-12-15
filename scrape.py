@@ -7,7 +7,7 @@ def scrape_data():
 
     # Get Featured Article
     executable_path = {'executable_path': 'C:\chromedriver_win32\chromedriver.exe'}
-    browser = Browser('chrome', **executable_path, headless=False)
+    browser = Browser('chrome', **executable_path, headless=True)
 
     url = "https://mars.nasa.gov/news"
 
@@ -24,9 +24,6 @@ def scrape_data():
     article_teaser = articles[0].find("div", class_="article_teaser_body").text
 
     # Get Featured Image
-    executable_path = {'executable_path': 'C:\chromedriver_win32\chromedriver.exe'}
-    browser = Browser('chrome', **executable_path, headless=False)
-
     url_start = 'https://www.jpl.nasa.gov'
     url_end = '/spaceimages/?search=&category=Mars'
 
@@ -47,7 +44,6 @@ def scrape_data():
     tables = pd.read_html(url)
     soup = bs(tables[0].to_html(index=False), 'lxml')
 
-    tbody = soup.find('tbody').html
     table = soup.find('table')
 
     # Remove table head
@@ -65,16 +61,17 @@ def scrape_data():
     url = url_start + url_end
 
     source = req.get(url).text
-    soup = bs(html, 'lxml')
+    soup = bs(source, 'lxml')
 
     links = soup.find("div", id='product-section').find_all("a")
 
     for x in links:
         if x.text != "":
             url = url_start + x['href']
+            title = x.find("h3").text
             source = req.get(url_start+x['href']).text
             mars_page = bs(source, 'lxml')
-            hemisphere_image_urls.append({"title": x.text.rsplit(" ", 1)[0], "img_url": mars_page.find("div", class_="downloads").find("li").find("a")["href"]})
+            hemisphere_image_urls.append({"title": title.rsplit(" ", 1)[0], "img_url": mars_page.find("div", class_="downloads").find("li").find("a")["href"]})
 
 
     return article_title, article_teaser, featured_image_url, table_html, hemisphere_image_urls
