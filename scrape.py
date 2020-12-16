@@ -2,6 +2,7 @@ from splinter import Browser
 from bs4 import BeautifulSoup as bs
 import requests as req
 import pandas as pd
+import time
 
 def scrape_data():
 
@@ -12,16 +13,18 @@ def scrape_data():
     url = "https://mars.nasa.gov/news"
 
     browser.visit(url)
+    	
+    time.sleep(5)
 
     html = browser.html
     soup = bs(html, 'lxml')
 
     articles = soup.find_all("li", class_="slide")
 
-    browser.quit()
-
     article_title = articles[0].find("div", class_="content_title").text
     article_teaser = articles[0].find("div", class_="article_teaser_body").text
+
+    print("Article Done")
 
     # Get Featured Image
     url_start = 'https://www.jpl.nasa.gov'
@@ -34,10 +37,10 @@ def scrape_data():
     html = browser.html
     soup = bs(html, 'lxml')
 
-    browser.quit()
-
     image_id = soup.find("div", class_="carousel_items").find("article")["style"].split("/")[-1].split("-")[0]
     featured_image_url = f'https://www.jpl.nasa.gov/spaceimages/images/mediumsize/{image_id}_ip.jpg'
+
+    print("Featured Image Done")
 
     # Get Mars Info
     url = 'https://space-facts.com/mars/'
@@ -50,7 +53,9 @@ def scrape_data():
     for thead in table.find_all('thead'):
         thead.replace_with('')
 
-    table_html = str(table.encode())
+    table_html = str(table.find("tbody"))
+
+    print("Mars Info Done")
 
     # Get Mars Hemisphere Info
     hemisphere_image_urls = []
@@ -73,5 +78,8 @@ def scrape_data():
             mars_page = bs(source, 'lxml')
             hemisphere_image_urls.append({"title": title.rsplit(" ", 1)[0], "img_url": mars_page.find("div", class_="downloads").find("li").find("a")["href"]})
 
+    print("Hemisphere Done")
+
+    browser.quit()
 
     return article_title, article_teaser, featured_image_url, table_html, hemisphere_image_urls

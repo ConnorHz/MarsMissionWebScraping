@@ -14,13 +14,24 @@
     <div class="jumbotron text-center">
       <h1>Mission to Mars</h1>
       <p><a class="btn btn-primary btn-lg" href="/scrape" role="button">Scrape New Data</a></p>
-      <p>Last Updated: {{last_updated.last_updated}}</p>
+      <p><small>Last Updated: {{last_updated.last_updated}}</small></p>
     </div>
     <div class="row">
       <div class="col-sm-12">
         <h2>Latest Mars News</h2>
         <h4>{{ latest_article.title }}</h4>
         <p>{{ latest_article.teaser }}</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-8">
+        <img style="width: 100%" src="{{ featured_image.url }}"/>
+      </div>
+      <div class="col-sm-4">
+        <h2>Mars Facts</h2>
+        <table class="table table-striped">
+        {{ facts.table_html|safe }}
+        </table>
       </div>
     </div>
   </div>
