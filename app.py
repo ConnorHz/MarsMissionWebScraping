@@ -14,13 +14,14 @@ mongo = PyMongo(app, uri="mongodb://localhost:27017/mars")
 @app.route("/")
 def home():
 
-    last_updated = mongo.db.lastUpdate.find_one()
+    last_updated = mongo.db.last_update.find_one()
     latest_article = mongo.db.article.find_one()
     featured_image = mongo.db.featured_image.find_one()
     facts = mongo.db.facts.find_one()
+    hemispheres = mongo.db.hemisphere.find()
 
     # Return template and data
-    return render_template("index.html", last_updated=last_updated, latest_article=latest_article, featured_image=featured_image, facts=facts)
+    return render_template("index.html", last_updated=last_updated, latest_article=latest_article, featured_image=featured_image, facts=facts, hemispheres=hemispheres)
 
 
 # Route that will trigger the scrape function
@@ -29,11 +30,15 @@ def scrape():
 
     article_title, article_teaser, featured_image_url, table_html, hemisphere_image_urls = scrape_data()
 
-    mongo.db.article.update({}, {"title" : article_title, "teaser" : article_teaser}, upsert=True)
-    mongo.db.featured_image.update({}, {"url" : featured_image_url}, upsert=True)
-    mongo.db.facts.update({}, {"table_html" : table_html}, upsert=True)
+    mongo.db.article.update_one({}, {"$set": {"title" : article_title, "teaser" : article_teaser}}, upsert=True)
+    mongo.db.featured_image.update_one({}, {"$set": {"url" : featured_image_url}}, upsert=True)
+    mongo.db.facts.update_one({}, {"$set": {"table_html" : table_html}}, upsert=True)
 
-    mongo.db.lastUpdate.update({}, {"last_updated": dt.now().strftime("%m/%d/%Y %H:%M")}, upsert=True)
+    mongo.db.hemisphere.drop()
+    for h in hemisphere_image_urls:
+        mongo.db.hemisphere.insert_one({"title" : h["title"], "img_url" : h["img_url"]})
+
+    mongo.db.last_update.update_one({}, {"$set": {"last_updated": dt.now().strftime("%m/%d/%Y %H:%M")}}, upsert=True)
 
     # Redirect back to home page
     return redirect("/")

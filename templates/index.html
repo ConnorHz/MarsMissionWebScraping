@@ -34,6 +34,16 @@
         </table>
       </div>
     </div>
+    <div class="row">
+      {% for h in hemispheres %}
+          <div class="card col-md-6">
+            <img class="card-img-top" style="width: 100%" src="{{ h.img_url }}" alt="{{ h.title }}">
+            <div class="card-body">
+              <h4 class="card-title">{{ h.title }}</h4>
+            </div>
+          </div>
+        {% endfor %}
+    </div>
   </div>
   </div>
 </body>
